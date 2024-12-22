@@ -10,11 +10,14 @@ const GameView = ({
   playerMove,
   opponentMove,
   moveLocked,
+  playerScore,
+  opponentScore
 }) => {
   return (
     <View style={styles.container}>
       
       <Text style={styles.title}>Round {round}</Text>
+      <Text>Score: {playerScore} - {opponentScore}</Text>
       <Text>Time Left: {timer}s</Text>
       <Text>Result: {result}</Text>
       <Text>Your Move: {playerMove || 'None'}</Text>

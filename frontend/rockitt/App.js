@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import Pusher from 'pusher-js';
 import GameView from './screens/GameView';
@@ -19,22 +19,27 @@ const App = () => {
   const [timer, setTimer] = useState(15);
   const [moveLocked, setMoveLocked] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [playerScore, setPlayerScore] = useState(0);
+  const [opponentScore, setOpponentScore] = useState(0);
 
-  const [roundEnded, setRoundEnded] = useState(false);
-
+  // 1. Evaluasi hasil permainan
   useEffect(() => {
-    evaluateGameResult(playerMove, opponentMove);
+    if (playerMove && opponentMove) {
+      evaluateGameResult(playerMove, opponentMove);
+    }
   }, [playerMove, opponentMove]);
 
+  // 2. Mengatur Pusher untuk menerima event
   useEffect(() => {
     if (!gameToken) return;
-
     const pusher = new Pusher('5ffd502396a114a03464', { cluster: 'ap1' });
     const channel = pusher.subscribe(`game-${gameToken}`);
 
-    channel.bind('room-join', handleRoomJoin);
+    channel.bind('room-join', handleRoomJoin)
     channel.bind('room-start', handleRoomStart);
-    channel.bind('player-move', handlePlayerMove);
+    channel.bind('round-move', handlePlayerMove);
+    channel.bind('round-end', handlePlayerFinish);
+    channel.bind('room-end', handleGameEnd);
 
     return () => {
       channel.unbind_all();
@@ -42,16 +47,21 @@ const App = () => {
     };
   }, [gameToken]);
 
-
+  // 3. Mengatur timer untuk permainan
   useEffect(() => {
-    if (status === 'Started') startCountdownTimer();
-  }, [status]);
+    if (status === "Started") {
+      startTimer();
+    }
 
-  useEffect(() => {
-    if(isAnimating) startCountdownTimer();
-    else stopCountdownTimer();
-  }, [isAnimating]);
+    if (timer === 0) {
+      stopTimer();
+    }
+    return () => {
+      clearInterval(timerIntervalRef.current); // Cleanup interval on component unmount
+    };
+  }, [status, timer]);
 
+  // 4. Mengatur hasil permainan
   const evaluateGameResult = (playerMove, opponentMove) => {
     if (!playerMove || !opponentMove) return;
 
@@ -63,11 +73,14 @@ const App = () => {
       (playerMove === 'paper' && opponentMove === 'rock')
     ) {
       setResult('You win!');
+      setPlayerScore((prevScore) => prevScore + 1);
     } else {
       setResult('You lose!');
+      setOpponentScore((prevScore) => prevScore + 1);
     }
   };
 
+  // 5. Mengatur perubahan status permainan
   const handleRoomJoin = (data) => {
     setPlayers([data.data.player_1_id, data.data.player_2_id]);
   };
@@ -76,62 +89,108 @@ const App = () => {
     setStatus('Started');
   };
 
-  const handlePlayerMove = (data) => {
-    console.log(data);
-    const lastMove = data.data.find((item) => item.player_id !== userId && item.round === round);
-    setOpponentMove(lastMove ? lastMove.move : null);
-    setMoveLocked(true);
+  const handleGameEnd = () => {
+    setStatus('Ended');
   };
 
-  const startCountdownTimer = () => {
-    let interval = setInterval(() => {
+  // 6. Mengatur timer
+  const timerIntervalRef = useRef(null); // Use useRef for timer interval
+
+  const startTimer = () => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current); // Clear existing interval to prevent duplicates
+    }
+    timerIntervalRef.current = setInterval(() => {
       setTimer((prevTimer) => {
-        if (prevTimer === 1) {
-          clearInterval(interval);
-          submitMove();
-          return 15;
+        if (prevTimer <= 1) {
+          clearInterval(timerIntervalRef.current); // Stop the interval when timer ends
+          return 0;
         }
         return prevTimer - 1;
       });
     }, 1000);
-
-    return () => clearInterval(interval);
   };
 
-  const stopCountdownTimer = () => {
-    setTimer(15);
+  const stopTimer = () => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null; // Reset the ref
+    }
+    submitMove();
   };
 
-  const submitMove = () => {
-    const moves = ['rock', 'paper', 'scissors'];
-    const chosenMove = playerMove || moves[Math.floor(Math.random() * moves.length)];
-
-    fetch(`https://backend-rockit.nabilmustofa.my.id/matches/${gameToken}/${round}`, {
-      method: 'POST',
+  // 7. Mengirim hasil permainan
+  const sendResult = (playerScore, opponentScore) => {
+    const result = playerScore > opponentScore ? 'win' : 'lose';
+    fetch(`http://13.239.139.158/games/${gameToken}/stop`, {
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${jwtToken}`,
       },
-      body: JSON.stringify({ move: chosenMove }),
-    }).then(() => {
-      setIsAnimating(true);
-      setMoveLocked(true);
-      setTimeout(() => {
-        setIsAnimating(false);
-        setMoveLocked(false);
-        setPlayerMove(null);
-        setOpponentMove(null);
-        setRound((prevRound) => prevRound + 1);
-      }, 5000);
+      body: JSON.stringify({ result: result }),
     });
   };
 
+  useEffect(() => {
+    if (playerScore >2 || opponentScore > 2) {
+      sendResult(playerScore, opponentScore);
+    }
+  },[playerScore, opponentScore]);
+
+  // 8. Mengatur pergerakan pemain
+  const handlePlayerMove = (data) => {
+    console.log(data);
+    const lastMove = data.data.find((item) => item.player_id !== userId );
+    setOpponentMove(lastMove ? lastMove.move : null);
+
+  };
+
+  // 9. Mengatur pengiriman pergerakan
+  const sendFinish = () =>{
+    fetch(`http://13.239.139.158/matches/${gameToken}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwtToken}`,
+      },
+    }
+    );
+  }
+
+  useEffect(() => {
+    if (playerMove != null && opponentMove!= null) {
+      evaluateGameResult();
+      sendFinish();
+    }
+  },[playerMove, opponentMove])
+
+  // 10. Mengatur pergerakan pemain lokal
   const makeMove = (move) => {
     if (!moveLocked) {
       setPlayerMove(move);
     }
   };
 
+  // 11. Mengatur pengiriman pergerakan lokal
+  const submitMove = async() => {
+    const moves = ['rock', 'paper', 'scissors'];
+    const chosenMove = playerMove || moves[Math.floor(Math.random() * moves.length)];
+
+    let response = await fetch(`http://13.239.139.158/matches/${gameToken}/${round}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwtToken}`,
+      },
+      body: JSON.stringify({ move: chosenMove }),
+    }
+    );
+    setMoveLocked(true);
+    setRound((prevRound) => prevRound + 1);
+  }
+    
+  // 12. Mengatur pengiriman token JWT
   const handleSubmit = async () => {
     if (!jwtToken) {
       Alert.alert('Error', 'Please enter a JWT token');
@@ -139,7 +198,7 @@ const App = () => {
     }
 
     try {
-      const response = await fetch('https://backend-rockit.nabilmustofa.my.id/games', {
+      const response = await fetch('http://13.239.139.158/games', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -158,6 +217,7 @@ const App = () => {
     }
   };
 
+  // 13. Mengatur pengiriman token permainan
   const handleSubmitGameToken = async () => {
     if (!inputGameToken) {
       Alert.alert('Error', 'Please enter a game token');
@@ -165,7 +225,7 @@ const App = () => {
     }
 
     try {
-      const response = await fetch(`https://backend-rockit.nabilmustofa.my.id/games/${inputGameToken}/join`, {
+      const response = await fetch(`http://13.239.139.158/games/${inputGameToken}/join`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -181,9 +241,10 @@ const App = () => {
     }
   };
 
+  // 14. Mengatur pengiriman perintah mulai permainan
   const handleStartGame = async () => {
     try {
-      await fetch(`https://backend-rockit.nabilmustofa.my.id/games/${gameToken}/start`, {
+      await fetch(`http://13.239.139.158/games/${gameToken}/start`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -193,6 +254,17 @@ const App = () => {
     } catch (error) {
       Alert.alert('Error', error.message);
     }
+  };
+
+  const handlePlayerFinish = () => {
+    evaluateGameResult(playerMove, opponentMove);
+setTimeout(() => {
+      setOpponentMove(null);
+    setPlayerMove(null);
+    setResult(null);
+    setTimer(10);
+    setMoveLocked(false);
+}, 3000);
   };
 
   return (
@@ -207,6 +279,8 @@ const App = () => {
           playerMove={playerMove}
           opponentMove={opponentMove}
           moveLocked={moveLocked}
+          playerScore={playerScore}
+          opponentScore={opponentScore}
         />
       ) : !gameToken ? (
         <AuthView jwtToken={jwtToken} setJwtToken={setJwtToken} handleSubmit={handleSubmit} />
