@@ -99,7 +99,7 @@ const[userId,setUserId] = useState(null);
 
   
     // Submit the move
-    fetch(`https://backend-rockit.nabilmustofa.my.id/matches/${gameToken}/${round}`, {
+    fetch(`http://13.239.139.158/matches/${gameToken}/${round}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -151,7 +151,7 @@ const[userId,setUserId] = useState(null);
 
     try {
       // Simulate API call to get game token
-      const response = await fetch('https://backend-rockit.nabilmustofa.my.id/games', {
+      const response = await fetch('http://13.239.139.158/games', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -181,7 +181,7 @@ const[userId,setUserId] = useState(null);
       return;
     }
 
-    const response = await fetch('https://backend-rockit.nabilmustofa.my.id/games/' + inputGameToken + '/join', {
+    const response = await fetch('http://13.239.139.158/games/' + inputGameToken + '/join', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -197,7 +197,7 @@ const[userId,setUserId] = useState(null);
 
   }
   const handleStartGame = async () => {
-    const response = await fetch('https://backend-rockit.nabilmustofa.my.id/games/' + gameToken + '/start', {
+    const response = await fetch('http://13.239.139.158/games/' + gameToken + '/start', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

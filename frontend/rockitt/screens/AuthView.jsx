@@ -9,7 +9,7 @@ const AuthView = ({ jwtToken, setJwtToken, handleSubmit,userId,setUserId }) => {
   }, [jwtToken]);
   const onSubmit = async () => {
     try {
-      const response = await fetch('https://backend-rockit.nabilmustofa.my.id/auth/login', {
+      const response = await fetch('http://13.239.139.158/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

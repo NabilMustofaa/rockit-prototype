@@ -122,7 +122,7 @@ const App = () => {
   // 7. Mengirim hasil permainan
   const sendResult = (playerScore, opponentScore) => {
     const result = playerScore > opponentScore ? 'win' : 'lose';
-    fetch(`https://backend-rockit.nabilmustofa.my.id/games/${gameToken}/stop`, {
+    fetch(`http://13.239.139.158/games/${gameToken}/stop`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -149,7 +149,7 @@ const App = () => {
 
   // 9. Mengatur pengiriman pergerakan
   const sendFinish = () =>{
-    fetch(`https://backend-rockit.nabilmustofa.my.id/matches/${gameToken}`, {
+    fetch(`http://13.239.139.158/matches/${gameToken}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -178,7 +178,7 @@ const App = () => {
     const moves = ['Rock', 'Paper', 'Scissors'];
     const chosenMove = playerMove || moves[Math.floor(Math.random() * moves.length)];
 
-    let response = await fetch(`https://backend-rockit.nabilmustofa.my.id/matches/${gameToken}/${round}`, {
+    let response = await fetch(`http://13.239.139.158/matches/${gameToken}/${round}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -200,7 +200,7 @@ const App = () => {
     }
 
     try {
-      const response = await fetch('https://backend-rockit.nabilmustofa.my.id/games', {
+      const response = await fetch('http://13.239.139.158/games', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -226,7 +226,7 @@ const App = () => {
     }
 
     try {
-      const response = await fetch(`https://backend-rockit.nabilmustofa.my.id/games/${inputGameToken}/join`, {
+      const response = await fetch(`http://13.239.139.158/games/${inputGameToken}/join`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -245,7 +245,7 @@ const App = () => {
   // 14. Mengatur pengiriman perintah mulai permainan
   const handleStartGame = async () => {
     try {
-      await fetch(`https://backend-rockit.nabilmustofa.my.id/games/${gameToken}/start`, {
+      await fetch(`http://13.239.139.158/games/${gameToken}/start`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
