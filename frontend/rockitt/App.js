@@ -68,9 +68,9 @@ const App = () => {
     if (playerMove === opponentMove) {
       setResult("It's a tie!");
     } else if (
-      (playerMove === 'rock' && opponentMove === 'scissors') ||
-      (playerMove === 'scissors' && opponentMove === 'paper') ||
-      (playerMove === 'paper' && opponentMove === 'rock')
+      (playerMove === 'Rock' && opponentMove === 'Scissors') ||
+      (playerMove === 'Scissors' && opponentMove === 'Paper') ||
+      (playerMove === 'Paper' && opponentMove === 'Rock')
     ) {
       setResult('You win!');
       setPlayerScore((prevScore) => prevScore + 1);
@@ -122,7 +122,7 @@ const App = () => {
   // 7. Mengirim hasil permainan
   const sendResult = (playerScore, opponentScore) => {
     const result = playerScore > opponentScore ? 'win' : 'lose';
-    fetch(`http://13.239.139.158/games/${gameToken}/stop`, {
+    fetch(`https://backend-rockit.nabilmustofa.my.id/games/${gameToken}/stop`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -141,14 +141,15 @@ const App = () => {
   // 8. Mengatur pergerakan pemain
   const handlePlayerMove = (data) => {
     console.log(data);
-    const lastMove = data.data.find((item) => item.player_id !== userId );
-    setOpponentMove(lastMove ? lastMove.move : null);
-
+    const isPlayer1 = data.data.player_1_id === userId;
+    console.log(isPlayer1,userId);
+    const opponentMove = isPlayer1 ? data.data.player_2_move : data.data.player_1_move;
+    setOpponentMove(opponentMove || null);
   };
 
   // 9. Mengatur pengiriman pergerakan
   const sendFinish = () =>{
-    fetch(`http://13.239.139.158/matches/${gameToken}`, {
+    fetch(`https://backend-rockit.nabilmustofa.my.id/matches/${gameToken}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -174,10 +175,10 @@ const App = () => {
 
   // 11. Mengatur pengiriman pergerakan lokal
   const submitMove = async() => {
-    const moves = ['rock', 'paper', 'scissors'];
+    const moves = ['Rock', 'Paper', 'Scissors'];
     const chosenMove = playerMove || moves[Math.floor(Math.random() * moves.length)];
 
-    let response = await fetch(`http://13.239.139.158/matches/${gameToken}/${round}`, {
+    let response = await fetch(`https://backend-rockit.nabilmustofa.my.id/matches/${gameToken}/${round}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -192,13 +193,14 @@ const App = () => {
     
   // 12. Mengatur pengiriman token JWT
   const handleSubmit = async () => {
+    console.log(userId)
     if (!jwtToken) {
       Alert.alert('Error', 'Please enter a JWT token');
       return;
     }
 
     try {
-      const response = await fetch('http://13.239.139.158/games', {
+      const response = await fetch('https://backend-rockit.nabilmustofa.my.id/games', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -209,7 +211,6 @@ const App = () => {
       if (!response.ok) throw new Error('Failed to fetch game token');
 
       const data = await response.json();
-      setUserId(data.data.player_1_id);
       setPlayers([data.data.player_1_id]);
       setGameToken(data.data.token);
     } catch (error) {
@@ -225,7 +226,7 @@ const App = () => {
     }
 
     try {
-      const response = await fetch(`http://13.239.139.158/games/${inputGameToken}/join`, {
+      const response = await fetch(`https://backend-rockit.nabilmustofa.my.id/games/${inputGameToken}/join`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -244,7 +245,7 @@ const App = () => {
   // 14. Mengatur pengiriman perintah mulai permainan
   const handleStartGame = async () => {
     try {
-      await fetch(`http://13.239.139.158/games/${gameToken}/start`, {
+      await fetch(`https://backend-rockit.nabilmustofa.my.id/games/${gameToken}/start`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -283,7 +284,7 @@ setTimeout(() => {
           opponentScore={opponentScore}
         />
       ) : !gameToken ? (
-        <AuthView jwtToken={jwtToken} setJwtToken={setJwtToken} handleSubmit={handleSubmit} />
+        <AuthView jwtToken={jwtToken} setJwtToken={setJwtToken} handleSubmit={handleSubmit} userId={userId} setUserId={setUserId} />
       ) : (
         <LobbyView
           gameToken={gameToken}

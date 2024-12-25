@@ -53,9 +53,9 @@ const App = () => {
       if (playerMove === opponentMove) {
         setResult('It\'s a tie!');
       } else if (
-        (playerMove === 'rock' && opponentMove === 'scissors') ||
-        (playerMove === 'scissors' && opponentMove === 'paper') ||
-        (playerMove === 'paper' && opponentMove === 'rock')
+        (playerMove === 'Rock' && opponentMove === 'Scissors') ||
+        (playerMove === 'Scissors' && opponentMove === 'Paper') ||
+        (playerMove === 'Paper' && opponentMove === 'Rock')
       ) {
         setResult('You win!');
       } else {
@@ -68,9 +68,9 @@ const App = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Rock Paper Scissors</Text>
       <View style={styles.buttons}>
-        <Button title="Rock" onPress={() => makeMove('rock')} />
-        <Button title="Paper" onPress={() => makeMove('paper')} />
-        <Button title="Scissors" onPress={() => makeMove('scissors')} />
+        <Button title="Rock" onPress={() => makeMove('Rock')} />
+        <Button title="Paper" onPress={() => makeMove('Paper')} />
+        <Button title="Scissors" onPress={() => makeMove('Scissors')} />
       </View>
       <Text style={styles.result}>{result}</Text>
       <Text>Your Move: {playerMove}</Text>

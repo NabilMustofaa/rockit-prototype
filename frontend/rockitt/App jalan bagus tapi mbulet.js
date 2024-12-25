@@ -25,9 +25,9 @@ const[userId,setUserId] = useState(null);
       if (playerMove === opponentMove) {
         setResult('It\'s a tie!');
       } else if (
-        (playerMove === 'rock' && opponentMove === 'scissors') ||
-        (playerMove === 'scissors' && opponentMove === 'paper') ||
-        (playerMove === 'paper' && opponentMove === 'rock')
+        (playerMove === 'Rock' && opponentMove === 'Scissors') ||
+        (playerMove === 'Scissors' && opponentMove === 'Paper') ||
+        (playerMove === 'Paper' && opponentMove === 'Rock')
       ) {
         setResult('You win!');
       } else {
@@ -93,7 +93,7 @@ const[userId,setUserId] = useState(null);
 
   const submitMove = () => {
     // If no move is made, randomly choose a move
-    const moves = ['rock', 'paper', 'scissors'];
+    const moves = ['Rock', 'Paper', 'Scissors'];
     const chosenMove = playerMove || moves[Math.floor(Math.random() * moves.length)];
   
 
@@ -133,9 +133,9 @@ const[userId,setUserId] = useState(null);
       if (playerMove === opponentMove) {
         setResult('It\'s a tie!');
       } else if (
-        (playerMove === 'rock' && opponentMove === 'scissors') ||
-        (playerMove === 'scissors' && opponentMove === 'paper') ||
-        (playerMove === 'paper' && opponentMove === 'rock')
+        (playerMove === 'Rock' && opponentMove === 'Scissors') ||
+        (playerMove === 'Scissors' && opponentMove === 'Paper') ||
+        (playerMove === 'Paper' && opponentMove === 'Rock')
       ) {
         setResult('You win!');
       } else {
@@ -219,9 +219,9 @@ const[userId,setUserId] = useState(null);
   <Text style={styles.animationText}>Processing results...</Text>
 ) : (
   <View style={styles.buttons}>
-    <Button title="Rock" onPress={() => makeMove('rock')} disabled={moveLocked} />
-    <Button title="Paper" onPress={() => makeMove('paper')} disabled={moveLocked} />
-    <Button title="Scissors" onPress={() => makeMove('scissors')} disabled={moveLocked} />
+    <Button title="Rock" onPress={() => makeMove('Rock')} disabled={moveLocked} />
+    <Button title="Paper" onPress={() => makeMove('Paper')} disabled={moveLocked} />
+    <Button title="Scissors" onPress={() => makeMove('Scissors')} disabled={moveLocked} />
   </View>
 )}
             <Text style={styles.result}>{result}</Text>

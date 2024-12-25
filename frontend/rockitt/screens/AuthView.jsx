@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 
-const AuthView = ({ jwtToken, setJwtToken, handleSubmit }) => {
+const AuthView = ({ jwtToken, setJwtToken, handleSubmit,userId,setUserId }) => {
   const [username, setUsername] = useState('');
   const [pin, setPin] = useState('');
   useEffect(() => {
@@ -9,7 +9,7 @@ const AuthView = ({ jwtToken, setJwtToken, handleSubmit }) => {
   }, [jwtToken]);
   const onSubmit = async () => {
     try {
-      const response = await fetch('http://13.239.139.158/auth/login', {
+      const response = await fetch('https://backend-rockit.nabilmustofa.my.id/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -21,7 +21,10 @@ const AuthView = ({ jwtToken, setJwtToken, handleSubmit }) => {
       const data = await response.json();
       console.log(data);
   
-      setJwtToken(data.access_token); // Set the new JWT token/ Log the new token directly
+      setJwtToken(data.access_token); 
+      setUserId(data.user.id)
+      console.log(userId,data.user.id);
+      // Set the new JWT token/ Log the new token directly
  // Call handleSubmit after setting the token
     } catch (error) {
       alert(error.message);

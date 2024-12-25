@@ -25,17 +25,17 @@ const GameView = ({
       <View style={styles.buttons}>
         <Button
           title="Rock"
-          onPress={() => makeMove('rock')}
+          onPress={() => makeMove('Rock')}
           disabled={moveLocked || isAnimating}
         />
         <Button
           title="Paper"
-          onPress={() => makeMove('paper')}
+          onPress={() => makeMove('Paper')}
           disabled={moveLocked || isAnimating}
         />
         <Button
           title="Scissors"
-          onPress={() => makeMove('scissors')}
+          onPress={() => makeMove('Scissors')}
           disabled={moveLocked || isAnimating}
         />
       </View>
